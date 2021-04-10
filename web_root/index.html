@@ -1,0 +1,412 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Coding Games</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+        <link rel="icon" href="favicon.ico">
+        <link rel="stylesheet" href="lib/spectre.min.css">
+        <link rel="stylesheet" href="lib/spectre-icons.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.60.0/lib/codemirror.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.60.0/addon/fold/foldgutter.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.60.0/addon/lint/lint.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.60.0/addon/hint/show-hint.css">
+
+        <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jshint@2.10.1/dist/jshint.min.js"></script>
+        
+        <script src="https://cdn.jsdelivr.net/npm/JSCPP@2.0.6/dist/JSCPP.es5.js"></script>
+        <!--<script src="JSCPP.es5.min.js"></script>-->
+       
+        <script src="https://cdn.jsdelivr.net/npm/matter-js@0.16.1/build/matter.min.js"></script>
+      
+        <script src="lib/rerolpxe-tenretni.js"></script>
+        <!--<script src="../common/header.js"></script>-->
+        
+        <script src="lib/require.js" data-main="app"></script>
+        <style>
+            * { 
+            margin: 0; 
+            padding: 0;
+            }
+            
+
+            #main{
+                background: #fff;
+                -position: absolute;
+                width: auto;
+                padding: 20px;
+            }
+
+
+            .center {
+                text-align: center;
+            }
+            
+            
+            .hidden{
+                display: none;
+            }
+            
+            .btn-group {
+                -margin-bottom : 2px;
+            }
+            
+            #btn-clearconsole {
+                position : absolute;
+                right : 10px;
+                bottom : 10px;
+            }
+            
+            .noleft {
+                border-left: none;
+                border-top-left-radius : 0px;
+                border-bottom-left-radius : 0px;
+            }
+            
+            #loaded-container{
+                display : none;
+            }
+            
+            #world{
+                -min-width: 500px;
+                -min-height : 500px;
+                -background-color : #f0f;
+            }
+            
+            #console{
+                position : relative;
+                height : 180px;
+                background-color : #fff;
+                font-size : 80%;
+            }
+            
+            
+            #console-scroll{
+                height : 100%;
+                overflow-y : scroll;
+            }
+            #console-scroll::-webkit-scrollbar {
+                width: 5px;
+                height : 5px;
+            }
+            #console-scroll::-webkit-scrollbar-track {
+              background: #f1f1f1; 
+            }
+            #console-scroll::-webkit-scrollbar-thumb {
+              background: #888; 
+            }
+            #console-scroll::-webkit-scrollbar-thumb:hover {
+              background: #555; 
+            }
+            
+            #console td{
+                padding-top : 1px;
+                padding-bottom : 1px;
+            }
+            #console td:nth-child(2){
+                width : 100%;
+            }
+            #console .log-msg{
+                color : #3b4351;
+            }
+            #console .log-warn{
+                color : #d70;
+            }
+            #console .log-err{
+                color : #f00;
+            }
+            #console .log-green{
+                color : #0a0;
+            }
+            
+            #info .help-frame{
+                margin-left : 20px;
+                margin-bottom : 10px;
+                padding-left : 5px;
+                border-left : 5px solid #eee;
+            }
+            #info .help-frame.d0{
+                margin-left : 0px;
+                margin-bottom : 30px;
+            }
+            
+            #info .help-title{
+                margin-bottom : 5px;
+                font-size : 16px;
+            }
+            #info .help-title.d0{
+                font-size : 20px;
+            }
+            #info .help-title.d1{
+                font-size : 18px;
+            }
+            
+            #info .help-subtitle{
+                margin-left : 5px;
+                margin-bottom : 5px;
+            }
+            
+            #info .help-type{
+                font-size : 50%;
+                color : #f80;
+            }
+            
+            #info .help-desc{
+                margin-left : 5px;
+                margin-bottom : 5px;
+                color : #888;
+            }
+            
+            .btn svg{
+                margin-bottom: -7px;
+            }
+            
+            #timestamp{
+                padding : 5px;
+            }
+            
+        </style>
+    </head>
+    <body>
+        <header class="navbar">
+        </header>
+        
+        <!--UI-->
+        <div id="main">
+            <!--标题-->
+            <h3>Coding Games 
+                <div class="btn-group float-right">
+                    <a class="btn btn-link" href="#help" id="btn-help">帮助</a> 
+                    <!-- <a class="btn btn-link" href="https://gitee.com/xdedss/web_pages/tree/master/game_hover" target="_blank">Source</a>  -->
+                </div>
+            </h3>
+            <!--加载界面-->
+            <p id="loading-container"><span class="loading" style="width:20px">　</span>加载中</p>
+            <!--主界面-->
+            <div id="loaded-container">
+                <div id="mainframe" class="columns">
+                    <!--CodeMirror编辑器部分-->
+                    <div id="editorframe" class="column">
+                        <!--按钮-->
+                        <div style="display:flow-root;">
+                            <!--编辑器左侧按钮-->
+                            <div class="btn-group">
+                                <label class="btn" id="btn-save" data-tooltip="保存"><i class="icon icon-download"></i>保存</label>
+                                <label class="btn" id="btn-load" data-tooltip="加载"><i class="icon icon-upload"></i>加载</label>
+                                <label class="btn tooltip" id="btn-reset" data-tooltip="重置到示例代码"><i class="icon icon-cross"></i>清除</label>
+                                <!--<a class="btn" href="#help"><i class="icon icon-search"></i>帮助</a>-->
+                                <div class="dropdown"><a class="btn dropdown-toggle noleft" id="btn-lang" tabindex="0">语言:<span id="langname"></span> <i class="icon icon-caret"></i></a>
+                                    <ul class="menu" id="langlist">
+                                        
+                                    </ul>
+                                </div>
+                            </div>
+                            <!--编辑器右侧按钮-->
+                            <div class="btn-group float-right">
+                                <!--<label class="btn tooltip" data-tooltip="停止代码运行" id="btn-stop">
+                                    <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                                        <path fill="currentColor" d="M18,18H6V6H18V18Z" />
+                                    </svg>
+                                </label>-->
+                                <label class="btn tooltip" data-tooltip="在不重启场景的情况下更新代码" id="btn-run">
+                                    热更新
+                                    <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                                        <path fill="currentColor" d="M19,3H5C3.89,3 3,3.89 3,5V9H5V5H19V19H5V15H3V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M10.08,15.58L11.5,17L16.5,12L11.5,7L10.08,8.41L12.67,11H3V13H12.67L10.08,15.58Z" />
+                                    </svg>
+                                </label>
+                            </div>
+                        </div>
+                        <!--编辑器容器-->
+                        <div id="jseditor">
+                            
+                        </div>
+                    </div>
+                    <!--Matter.js部分-->
+                    <div class="column col-auto">
+                        <!--按钮栏-->
+                        <div class="columns">
+                            <!--左侧-->
+                            <div class="column col-auto">
+                                <div class="btn-group">
+                                    <label class="btn tooltip" data-tooltip="重新加载代码和场景" id="btn-resetsim">
+                                        <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z" />
+                                        </svg>
+                                        重启
+                                    </label>
+                                    <label class="btn tooltip" data-tooltip="暂停/恢复物理仿真" id="btn-pause">
+                                        <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="M14,19H18V5H14M6,19H10V5H6V19Z" />
+                                        </svg>
+                                    </label>
+                                    <label class="btn tooltip" data-tooltip="暂停/恢复物理仿真" id="btn-resume">
+                                        <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+                                        </svg>
+                                    </label>
+                                </div>
+                                <div class="btn-group">
+                                    <a class="btn tooltip" data-tooltip="场景信息" href="#info">
+                                        <svg style="width:24px;height:24px;margin-bottom:-7px" viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
+                                        </svg>
+                                    </a>
+                                    <a class="btn tooltip" data-tooltip="场景设置" href="#settings">
+                                        <svg style="width:24px;height:24px;margin-bottom:-7px" viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8M12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12A2,2 0 0,0 12,10M10,22C9.75,22 9.54,21.82 9.5,21.58L9.13,18.93C8.5,18.68 7.96,18.34 7.44,17.94L4.95,18.95C4.73,19.03 4.46,18.95 4.34,18.73L2.34,15.27C2.21,15.05 2.27,14.78 2.46,14.63L4.57,12.97L4.5,12L4.57,11L2.46,9.37C2.27,9.22 2.21,8.95 2.34,8.73L4.34,5.27C4.46,5.05 4.73,4.96 4.95,5.05L7.44,6.05C7.96,5.66 8.5,5.32 9.13,5.07L9.5,2.42C9.54,2.18 9.75,2 10,2H14C14.25,2 14.46,2.18 14.5,2.42L14.87,5.07C15.5,5.32 16.04,5.66 16.56,6.05L19.05,5.05C19.27,4.96 19.54,5.05 19.66,5.27L21.66,8.73C21.79,8.95 21.73,9.22 21.54,9.37L19.43,11L19.5,12L19.43,13L21.54,14.63C21.73,14.78 21.79,15.05 21.66,15.27L19.66,18.73C19.54,18.95 19.27,19.04 19.05,18.95L16.56,17.95C16.04,18.34 15.5,18.68 14.87,18.93L14.5,21.58C14.46,21.82 14.25,22 14,22H10M11.25,4L10.88,6.61C9.68,6.86 8.62,7.5 7.85,8.39L5.44,7.35L4.69,8.65L6.8,10.2C6.4,11.37 6.4,12.64 6.8,13.8L4.68,15.36L5.43,16.66L7.86,15.62C8.63,16.5 9.68,17.14 10.87,17.38L11.24,20H12.76L13.13,17.39C14.32,17.14 15.37,16.5 16.14,15.62L18.57,16.66L19.32,15.36L17.2,13.81C17.6,12.64 17.6,11.37 17.2,10.2L19.31,8.65L18.56,7.35L16.15,8.39C15.38,7.5 14.32,6.86 13.12,6.62L12.75,4H11.25Z" />
+                                        </svg>
+                                    </a>
+                                    <div class="dropdown"><a class="btn dropdown-toggle noleft" id="btn-loadlevel" tabindex="0">场景:<span id="levelname"></span> <i class="icon icon-caret"></i></a>
+                                        <ul class="menu" id="levellist">
+                                            
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--中间-->
+                            <div class="column col-auto col-mx-auto">
+                                <!--<span id="status" class="label label-success float-right"></span>-->
+                            </div>
+                            <!--右侧-->
+                            <div class="column col-auto">
+                                <span class="bg-gray" id="timestamp">t+00.00</span>
+                            </div>
+                        </div>
+                        <!--</div>-->
+                        <!--Matter.js render容器-->
+                        <div id="world">
+                            
+                        </div>
+                    </div>
+                </div>
+                <!--virtual console-->
+                <div id="console">
+                    <button class="btn" id="btn-clearconsole"><i class="icon icon-delete"></i></button>
+                    <div id="console-scroll">
+                        <table class="table table-striped table-hover">
+                            <tbody>
+                                <tr><td></td><td>Console output goes here.</td></tr>
+                            </tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!--隐藏文件上传-->
+        <input type='file' id="fileselect" class="hidden" accept=".js">
+        
+        <!--帮助弹窗-->
+        <div class="modal" id="help">
+            <a href="#" class="modal-overlay" aria-label="Close"></a>
+            <div class="modal-container">
+                <div class="modal-header">
+                    <a href="#" class="btn btn-clear float-right" aria-label="Close"></a>
+                    <div class="modal-title h5">帮助</div>
+                </div>
+                <div class="modal-body">
+                    <div class="content">
+                        <p>按F1或页面右上角按钮可以打开此帮助页面🤔</p>
+                        
+                        <h4>关于此应用</h4>
+                        <p>这是一个通用的编程游戏框架，可以模块化地加载不同的场景，让用户在编辑器里编写代码来控制物理模拟中的物体。</p>
+                        <p>目前支持三种语言：javascript、python3和c++。其中python仅支持有限的包（math等）；
+                            c++仅支持基本语法和有限的头文件（不能定义class、struct，不支持模板等，具体请看JSCPP的<a href="https://github.com/felixhao28/JSCPP#which-features-are-implemented" target="_blank">readme</a>）</p>
+                        <p>代码均在本地浏览器中的沙箱里执行。</p>
+                        <h4>操作说明：</h4>
+                        <p>页面加载完成后会直接打开demo场景并开始运行示例代码。每次更改代码之后，需要点场景上方的重启来重新载入代码，或者点击热更新在不重启场景的情况下直接插入新的代码。</p>
+                        <h5>场景信息和全局变量</h5>
+                        <p>不同的场景可能有不同的全局变量定义和具体操作方式，请点击场景信息按钮查看。</p>
+                        <p>通常js中的全局变量直接以js对象定义，可以用形如vessel.velocity.x的方式获取；
+                            python中是以字典形式定义，可以用形如vessel['velocity']['x']的方式获取；
+                            c++中没有直接定义全局变量，而是提供了一个获取全局变量的函数，可以用形如getFloat("vessel.velocity.x")的方式获取所需变量。</p>
+                        <h5>调试信息</h5>
+                        <p>js中的console.log()，python中的print()，c++中的printf都可以在虚拟控制台中输出信息。其中js和python可以直接打印对象或字典，c++只能打印字符串。</p>
+                        <h5>错误定位</h5>
+                        <p>如果代码运行过程中出错，双击控制台的错误信息可以让编辑器光标跳转到错误位置（仅限js和python）。</p>
+                        <h5>保存</h5>
+                        <p>代码改动后保存按钮上会有蓝点提示，虽然代码会缓存在页面的localStorage里，但还是建议及时保存成文件。如果代码不想要了可以点清除重置成默认代码。</p>
+                        
+                        <h4>制作自定义场景</h4>
+                        <p>请参考<a href="https://gitee.com/xdedss/web_pages/blob/master/game_hover/levels/hopper.js" target="_blank">hopper场景</a>的源码</p>
+                        <p>首先，每个场景是由一个包含AMD(Asynchronous Module Definition)的.js文件来定义的。在define的参数中指定依赖项，在回调函数中用参数接收依赖项（其中level是必须的，因为Level是场景的父类）。</p>
+                        <p>随后需要定义一个类继承Level类，至少实现以下方法：</p>
+                        <ul class="list">
+                            <li>init() 在场景加载时被调用</li>
+                            <li>reset() 在用户点击重置场景时被调用</li>
+                            <li>tick() 在物理帧时被调用</li>
+                            <li>onCollision() 在发生碰撞时被调用</li>
+                            <li>exec(code, langtype) 在用户提交代码时被调用，code为代码文本，langtype为语言('js', 'py' 或 'cpp')</li>
+                        </ul>
+                        <p>还需要设置以下属性：</p>
+                        <ul class="list">
+                            <li>template 给出各种语言的示例代码</li>
+                            <li>desc 显示在场景信息里的描述文字（html）</li>
+                            <li>documentation 描述全局变量的类型、说明和结构</li>
+                        </ul>
+                        <p>最后return这个类即可</p>
+                        <p>将写好的代码存成.js文件，文件名命名为场景名，点击场景-添加并上传文件</p>
+                        <h4>Powered by</h4>
+                        <a class="btn btn-link" href="https://picturepan2.github.io/spectre/index.html" target="_blank">Spectre</a>/
+                        <a class="btn btn-link" href="https://codemirror.net/" target="_blank">CodeMirror</a>/
+                        <a class="btn btn-link" href="https://github.com/liabru/matter-js" target="_blank">Matter.js</a>/
+                        <a class="btn btn-link" href="https://github.com/codecombat/esper.js/" target="_blank">Esper</a>/
+                        <a class="btn btn-link" href="http://skulpt.org/" target="_blank">Skulpt</a>/
+                        <a class="btn btn-link" href="https://github.com/felixhao28/JSCPP" target="_blank">JSCPP</a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    (╯‵□′)╯︵┻━┻
+                </div>
+            </div>
+        </div>
+        
+        <!--场景描述弹窗-->        
+        <div class="modal" id="info">
+            <a href="#" class="modal-overlay" aria-label="Close"></a>
+            <div class="modal-container">
+                <div class="modal-header">
+                    <a href="#" class="btn btn-clear float-right" aria-label="Close"></a>
+                    <div class="modal-title h5">场景信息</div>
+                </div>
+                <div class="modal-body">
+                    <div class="content">
+                        <p id="leveldesc"></p>
+                        <h4>全局变量</h4>
+                        <p>这里列出了此场景中可以使用的全局变量和函数</p>
+                        <div id="globalvars">
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    
+                </div>
+            </div>
+        </div>
+        
+        <!--场景设置弹窗-->        
+        <div class="modal" id="settings">
+            <a href="#" class="modal-overlay" aria-label="Close"></a>
+            <div class="modal-container">
+                <div class="modal-header">
+                    <a href="#" class="btn btn-clear float-right" aria-label="Close"></a>
+                    <div class="modal-title h5">场景设置</div>
+                </div>
+                <div class="modal-body">
+                    <div class="content">
+                        <div id="scenesettings">
+                            暂无
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    
+                </div>
+            </div>
+        </div>
+        
+    </body>
+</html>
