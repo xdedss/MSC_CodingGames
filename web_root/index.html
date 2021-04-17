@@ -15,6 +15,7 @@
 
         <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/jshint@2.10.1/dist/jshint.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/md5@2.3.0/dist/md5.min.js"></script>
         
         <script src="https://cdn.jsdelivr.net/npm/JSCPP@2.0.6/dist/JSCPP.es5.js"></script>
         <!--<script src="JSCPP.es5.min.js"></script>-->
@@ -159,6 +160,15 @@
                 color : #888;
             }
             
+            /*#rank td:nth-child(2){
+                width : 100%;
+                text-align : center;
+            }
+            
+            #rank th:nth-child(2){
+                text-align : center;
+            }*/
+            
             .btn svg{
                 margin-bottom: -7px;
             }
@@ -178,6 +188,9 @@
             <!--标题-->
             <h3>Coding Games 
                 <div class="btn-group float-right">
+                    <a class="btn btn-link" href="#login" id="btn-login">登录</a>
+                    <a class="btn btn-link" href="#login" id="btn-logout">退出登录</a>
+                    <a class="btn btn-link" href="#" id="btn-username"><i class="icon icon-people"></i><span>xxx</span></a>
                     <a class="btn btn-link" href="#help" id="btn-help">帮助</a> 
                     <!-- <a class="btn btn-link" href="https://gitee.com/xdedss/web_pages/tree/master/game_hover" target="_blank">Source</a>  -->
                 </div>
@@ -263,6 +276,9 @@
                                             
                                         </ul>
                                     </div>
+                                    <a class="btn" id="btn-rank" href="#rank">
+                                        排行榜
+                                    </a>
                                 </div>
                             </div>
                             <!--中间-->
@@ -289,7 +305,7 @@
                             <tbody>
                                 <tr><td></td><td>Console output goes here.</td></tr>
                             </tbody>
-                    </table>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -399,6 +415,70 @@
                     <div class="content">
                         <div id="scenesettings">
                             暂无
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    
+                </div>
+            </div>
+        </div>
+        
+        <!--登录/注册页面-->        
+        <div class="modal" id="login">
+            <a href="#" class="modal-overlay" aria-label="Close"></a>
+            <div class="modal-container">
+                <div class="modal-header">
+                    <a href="#" class="btn btn-clear float-right" aria-label="Close"></a>
+                    <div class="modal-title h5">登录</div>
+                </div>
+                <div class="modal-body">
+                    <div class="content">
+                        <div id="logincontent">
+                            <div class="form-group">
+                                <label class="form-label" for="login-username">Username</label>
+                                <input class="form-input" id="login-username" type="text" placeholder="Username">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="login-password">Password</label>
+                                <input class="form-input" id="login-password" type="password" placeholder="Password">
+                            </div>
+                            <p class="text-error"></p>
+                            <button class="btn btn-primary float-right" id="login-login">登录</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    
+                </div>
+            </div>
+        </div>
+        
+        <!--排行榜-->        
+        <div class="modal" id="rank">
+            <a href="#" class="modal-overlay" aria-label="Close"></a>
+            <div class="modal-container">
+                <div class="modal-header">
+                    <a href="#" class="btn btn-clear float-right" aria-label="Close"></a>
+                    <div class="modal-title h5">排行榜</div>
+                </div>
+                <div class="modal-body">
+                    <div class="content">
+                        <div id="rankcontent">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>username</th>
+                                        <th>score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>test</td>
+                                        <td>1232</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

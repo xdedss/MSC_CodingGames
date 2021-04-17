@@ -1,0 +1,47 @@
+﻿
+
+login
+    post传入data示例：（pass为md5）
+        {"username":"user1", "pass", "4eae35f1b35977a00ebd8086c259d4c9"}
+    返回示例：
+        （成功）
+        {"success" : true, "token" : "8e6070d15d129ec47a0ca4981d9b4184"}
+        （失败）
+        {"success" : false}
+
+
+validate
+    post传入data示例：
+        {"token" : "8e6070d15d129ec47a0ca4981d9b4184"}
+    返回示例：
+        （成功）
+        {"success" : true}
+        （失败）
+        {"success" : false}
+
+
+uploadscore
+    post传入data示例：
+        {
+            "token" : "8e6070d15d129ec47a0ca4981d9b4184",
+            "levelname" : "falcon",
+            "score" : 2.333,
+            "code" : "function update(){ ........."
+        }
+    返回示例：
+        （成功）
+        {"success" : true}
+        （失败）
+        {"success" : false}
+
+getrank
+    post传入data示例：
+        {"levelname" : "falcon"}
+    返回示例：
+        （成功）
+        {
+            "success" : true,
+            "rank" : [{"username" : "user1", "score" : 233.3}, {"username" : "user2", "score" : 123.4}]
+        }
+        （失败）
+        {"success" : false}

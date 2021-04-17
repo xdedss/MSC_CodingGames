@@ -2,7 +2,6 @@
 
 
 //(╯‵□′)╯︵┻━┻
-//todo : collision / save/ load /exception handling
 
 $(function(){
     
@@ -83,7 +82,7 @@ $(function(){
     
     // load codemirror and matter.js
     require(['require.config'], function(){
-        require(['app-ui', 'codemirror-wrap', 'matter-wrap', 'sandbox-wrap', 'storage'], function(UISetup, CodeMirrorSetup, MatterSetup, Sandbox, storage) {
+        require(['app-ui', 'codemirror-wrap', 'matter-wrap', 'sandbox-wrap', 'storage', 'api'], function(UISetup, CodeMirrorSetup, MatterSetup, Sandbox, storage, api) {
             
             //loaded
             console.log('loaded');
@@ -345,6 +344,7 @@ $(function(){
                     //debug
                     if (globalDebug){
                         window.ui = ui;
+                        window.api = api;
                         window.level = level;
                         window.editor = editor;
                         window.matter = matter;
@@ -395,6 +395,54 @@ $(function(){
             else{
                 //console.log('not first');
             }
+            
+            // login
+            (async function(){
+                ui.markLogin(null);
+                if (storage.misc.has('token')){
+                    var res = await api.validate(storage.misc.load('token'));
+                    if (res.success){
+                        ui.markLogin(storage.misc.load('username'));
+                    }
+                }
+            })();
+            
+            ui.on('login', async function(username, password) {
+                ui.markLoginLoading(true);
+                ui.markLoginError(null);
+                var res = await api.login(username, password).then(w => w, e => {success : false});
+                // console.log(res);
+                if (res.success){
+                    ui.markLoginLoading(false);
+                    ui.markLogin(username);
+                    storage.misc.save('username', username);
+                    storage.misc.save('token', res.token);
+                }
+                else{
+                    ui.markLoginLoading(false);
+                    ui.markLoginError('登录失败');
+                }
+            });
+            
+            ui.on('logout', function(){
+                storage.misc.remove('token');
+                storage.misc.remove('username');
+                ui.markLogin(null);
+                
+            });
+            
+            ui.on('rank', async function(){
+                ui.listRank(null);
+                if (currentLevel != null) {
+                    var res = await api.getRank(currentLevel.name).then(w => w, e => {success : false});
+                    if (res.success){
+                        ui.listRank(res.rank);
+                    }
+                    else{
+                        // ???
+                    }
+                }
+            });
                 
         });
     });

@@ -275,6 +275,60 @@ define([], function(){
             $('#timestamp').text('t+' + seconds.toFixed(2));
         }
         
+        // 显示登录用户名
+        var markLogin = function(username){
+            if (username === null){
+                $('#login').css('display', '');
+                $('#btn-login').css('display', '');
+                $('#btn-logout').css('display', 'none');
+                $('#btn-username').css('display', 'none');
+                
+            }
+            else{
+                $('#login').css('display', 'none');
+                $('#btn-login').css('display', 'none');
+                $('#btn-logout').css('display', '');
+                $('#btn-username').css('display', '');
+                $('#btn-username span').text(username);
+            }
+        }
+        
+        // 显示登录错误
+        var markLoginError = function(error){
+            if (error === null){
+                $('#logincontent .text-error').text('');
+            }
+            else{
+                $('#logincontent .text-error').text(error);
+            }
+        }
+        // 登录中
+        var markLoginLoading = function(isLoading){
+            if (isLoading){
+                $('#login-login').addClass('disabled loading');
+            }
+            else{
+                $('#login-login').removeClass('disabled loading');
+            }
+        }
+        
+        // rank为数组[{username:'xxx', score:xxx}, ...]    null表示加载中
+        var listRank = function(rank){
+            if (rank === null){
+                $('#rankcontent').addClass('loading');
+            }
+            else{
+                $('#rankcontent').removeClass('loading');
+                $('#rankcontent tbody').html('');
+                rank.forEach(({username, score}) => {
+                    var tabrow = $(`<tr><td username></td><td score></td></tr>`);
+                    tabrow.find('td[username]').text(username);
+                    tabrow.find('td[score]').text(score.toFixed(10));
+                    $('#rankcontent tbody').append(tabrow);
+                });
+            }
+        }
+        
         // listen click
         $('#btn-save').on('click', e => listeners.invoke('save'));
         $('#btn-load').on('click', e => listeners.invoke('load'));
@@ -284,6 +338,9 @@ define([], function(){
         $('#btn-resetsim').on('click', e => listeners.invoke('resetsim'));
         $('#btn-pause').on('click', e => listeners.invoke('pause'));
         $('#btn-resume').on('click', e => listeners.invoke('resume'));
+        $('#login-login').on('click', e => listeners.invoke('login', $('#login-username').val(), $('#login-password').val()));
+        $('#btn-logout').on('click', e => listeners.invoke('logout'));
+        $('#btn-rank').on('click', e => listeners.invoke('rank'));
         var on = function(e, f){
             listeners.on(e, f);
         }
@@ -329,6 +386,10 @@ define([], function(){
             markLoading,
             markLevel,
             markLang,
+            markLogin,
+            markLoginError,
+            markLoginLoading,
+            listRank,
             listLevel,
             listLang,
             on,
