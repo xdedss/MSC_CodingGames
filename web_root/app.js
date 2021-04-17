@@ -417,6 +417,7 @@ $(function(){
                     ui.markLogin(username);
                     storage.misc.save('username', username);
                     storage.misc.save('token', res.token);
+                    //location.hash = '';
                 }
                 else{
                     ui.markLoginLoading(false);
@@ -428,6 +429,8 @@ $(function(){
                 storage.misc.remove('token');
                 storage.misc.remove('username');
                 ui.markLogin(null);
+                ui.markLoginLoading(false);
+                ui.markLoginError(null);
                 
             });
             
