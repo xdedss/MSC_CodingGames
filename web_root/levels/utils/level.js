@@ -13,11 +13,14 @@ define([], function(){
         return typeof(obj.init) == 'function' && typeof(obj.uninit) == 'function';
     }
     
+    
     class Level{
         constructor(app) {
-            var {ui, matter} = app;
+            var {ui, matter, api, storage} = app;
             this.matter = matter;
             this.ui = ui;
+            this.api = api;
+            this.storage = storage;
             this._objectsToAdd = [];
             
             this.time = 0;
@@ -30,7 +33,6 @@ define([], function(){
             Matter.Events.on(this.matter.engine, 'tick', this._ontick);
             
             this.init();
-            this.postInit();
         }
         
         // 初始化 给子类用，子类在这里调用 this.addObject();
@@ -122,6 +124,7 @@ define([], function(){
         
         template = "\nconsole.log('hello world');\n";
         desc = "no description provided.";
+        parameters = {};
         documentation = {
             foo : {
                 type : 'function',

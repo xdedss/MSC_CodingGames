@@ -51,56 +51,101 @@ define([], function(){
     
     // return token
     async function login(username, password){
-        var passwordmd5 = MD5(password);
-        
-        // var res = await ajaxPostAsync('xxx', {username : username, pass : passwordmd5 });
-        var res = await (async function(){ //dummy server
-            await sleep(1000);
-            if (username == dummyUser && passwordmd5 == dummyPass){
-                return { success : true, token : dummyToken };
-            }
-            else{
-                return { success : false };
-            }
-        })();
-        
-        return res;
+        try{
+            var passwordmd5 = MD5(password);
+            var postData = {username : username, pass : passwordmd5 };
+            
+            // var res = await ajaxPostAsync('xxx', postData);
+            var res = await (async function(){ //dummy server
+                await sleep(1000);
+                if (username == dummyUser && passwordmd5 == dummyPass){
+                    return { success : true, token : dummyToken };
+                }
+                else{
+                    return { success : false };
+                }
+            })();
+            
+            return res;
+        }
+        catch(e){
+            console.log(e);
+            return { success : false };
+        }
     }
     
     // return 登录状态是否有效
     async function validate(token){
-        
-        // var res = await ajaxPostAsync('xxx', {token});
-        var res = await (async function(){
-            await sleep(1000);
-            if (token == dummyToken) {
-                return { success : true };
-            }
-            else{
-                return { success : false };
-            }
-        })();
-        
-        return res;
+        try{
+            var postData = {token};
+            
+            // var res = await ajaxPostAsync('xxx', postData);
+            var res = await (async function(){
+                await sleep(1000);
+                if (token == dummyToken) {
+                    return { success : true };
+                }
+                else{
+                    return { success : false };
+                }
+            })();
+            
+            return res;
+        }
+        catch(e){
+            console.log(e);
+            return { success : false };
+        }
     }
     
     // 传入
     async function uploadScore(token, levelName, score, code){
-        await sleep(1000);
-        if (token == dummyToken) {
-            console.log(JSON.stringify({token, levelname : levelName, score, code}));
-            return { success : true };
+        try{
+            var postData = {
+                "token" : token,
+                "levelname" : levelName,
+                "score" : score,
+                "code" : code
+            };
+            
+            // var res = await ajaxPostAsync('xxx', postData);
+            var res = await (async function(){
+                await sleep(1000);
+                if (token == dummyToken) {
+                    console.log(JSON.stringify({token, levelname : levelName, score, code}));
+                    return { success : true };
+                }
+                else {
+                    return { success : false };
+                }
+            })();
+            
+            return res;
         }
-        else {
+        catch(e){
+            console.log(e);
             return { success : false };
         }
     }
     
     // 加载排行榜 不需要认证
     async function getRank(levelName){
-        var postData = {levelname : levelName};
-        await sleep(1000);
-        return { success : true, rank : dummyRank };
+        try{
+            var postData = {levelname : levelName};
+            
+            // var res = await ajaxPostAsync('xxx', postData);
+            var res = await (async function(){
+                await sleep(1000);
+                return { success : true, rank : dummyRank };
+            })();
+            
+            console.log(res);
+            return res;
+        }
+        catch(e){
+            console.log(e);
+            return { success : false };
+        }
     }
     
     return {

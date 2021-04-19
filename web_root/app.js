@@ -100,7 +100,6 @@ $(function(){
             
             // setup
             var ui = UISetup();
-            ui.markLoading(false);
             var matter = MatterSetup($('#world')[0], width, height);
             var editor = CodeMirrorSetup($('#jseditor')[0], $('#editorframe').width(), height);
             
@@ -202,6 +201,13 @@ $(function(){
                 if (currentLevel != null) {
                     matter.engine.resume();
                     ui.log('resumed', 1);
+                }
+            });
+            
+            // settings open
+            ui.on('settingsopen', function(){
+                if (currentLevel != null){
+                    ui.listParameters(currentLevel.parameters);
                 }
             });
             
@@ -325,7 +331,8 @@ $(function(){
                 }
                 requirejs([requireTarget], function(Level){
                     
-                    level = new Level({ui, matter});
+                    level = new Level({ui, matter, api, storage});
+                    level.postInit();
                     level.name = name;
                     currentLevel = level;
                     // set editor content
@@ -340,6 +347,8 @@ $(function(){
                     
                     // also run code
                     currentLevel.exec(editor.getValue(), currentLang);
+                    
+                    ui.markLoading(false);
                     
                     //debug
                     if (globalDebug){
@@ -385,7 +394,6 @@ $(function(){
             var getLangName = p['lang'];
             currentLang = getLangName || storage.misc.load('lastlang');
             console.log('language : ' + currentLang);
-            loadLevelAuto(getLevelName);
             
             // open help
             if (storage.isFirstOpen()){
@@ -397,17 +405,40 @@ $(function(){
             }
             
             // login
+            // auto login
             (async function(){
                 ui.markLogin(null);
                 if (storage.misc.has('token')){
                     var res = await api.validate(storage.misc.load('token'));
                     if (res.success){
                         ui.markLogin(storage.misc.load('username'));
+                        loadLevelAuto(getLevelName);
+                        return;
                     }
                 }
+                // not logged in
+                location.hash = 'login';
             })();
             
+            // init login panel
+            ui.on('loginopen', function(){
+                ui.markLoginLoading(false);
+                ui.markLoginError(null);
+            });
+            
+            // login action
             ui.on('login', async function(username, password) {
+                // check values
+                console.log(username, password);
+                if (username.length == 0){
+                    ui.markLoginError('用户名不能为空');
+                    return;
+                }
+                if (password.length == 0){
+                    ui.markLoginError('密码不能为空');
+                    return;
+                }
+                // send request
                 ui.markLoginLoading(true);
                 ui.markLoginError(null);
                 var res = await api.login(username, password).then(w => w, e => {success : false});
@@ -417,7 +448,7 @@ $(function(){
                     ui.markLogin(username);
                     storage.misc.save('username', username);
                     storage.misc.save('token', res.token);
-                    //location.hash = '';
+                    loadLevelAuto(getLevelName);
                 }
                 else{
                     ui.markLoginLoading(false);
@@ -431,12 +462,20 @@ $(function(){
                 ui.markLogin(null);
                 ui.markLoginLoading(false);
                 ui.markLoginError(null);
-                
+                location.href = location.href; // reload
             });
             
-            ui.on('rank', async function(){
-                ui.listRank(null);
+            ui.on('rank', function(){
                 if (currentLevel != null) {
+                    ui.markRankCat(currentLevel.rank);
+                }
+            });
+            
+            ui.on('rankchange', async function(rankname){
+                console.log(rankname);
+                ui.listRank(null); //加载中
+                if (currentLevel != null && currentLevel.rank[rankname] != null) {
+                    ui.markRankScore(currentLevel.rank[rankname].myScore);
                     var res = await api.getRank(currentLevel.name).then(w => w, e => {success : false});
                     if (res.success){
                         ui.listRank(res.rank);
@@ -444,6 +483,24 @@ $(function(){
                     else{
                         // ???
                     }
+                }
+                
+            });
+            
+            ui.on('uploadscore', async function(rankname){
+                if (currentLevel != null && storage.misc.has('token')){
+                    ui.markRankUploading(true);
+                    var res = await api.uploadScore(storage.misc.load('token'), rankname, currentLevel.rank[rankname].myScore, currentLevel.currentCode);
+                    ui.markRankUploading(false);
+                    if (res.success){
+                        ui.markRankUploadSuccessful(true);
+                    }
+                    else{
+                        ui.markRankUploadSuccessful(false);
+                        console.log(res);
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    ui.markRankUploadSuccessful(null);
                 }
             });
                 

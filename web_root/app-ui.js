@@ -261,12 +261,10 @@ define([], function(){
         //显示加载转圈圈
         var markLoading = function(loading){
             if (loading){
-                $('#loading-container').css('display', 'block');
-                $('#loaded-container').css('display', 'none');
+                $('#loaded-container').addClass('loading');
             }
             else{
-                $('#loading-container').css('display', 'none');
-                $('#loaded-container').css('display', 'block');
+                $('#loaded-container').removeClass('loading');
             }
         }
         
@@ -312,13 +310,68 @@ define([], function(){
             }
         }
         
+        // 初始化排名面板
+        var markRankCat = function(rankCat){
+            if (rankCat == null || Object.keys(rankCat).length == 0){
+                $('#rankcontent').css('display', 'none');
+                $('#select-rank').html('<option>无可用排名</option>');
+            }
+            else{
+                $('#rankcontent').css('display', '');
+                $('#select-rank').html('');
+                for (var k in rankCat){
+                    $('#select-rank').append(`<option value="${k}">${rankCat[k].name}</option>`);
+                }
+                var defaultRank = Object.keys(rankCat)[0];
+                $('#select-rank').val(defaultRank);
+                listeners.invoke('rankchange', defaultRank);
+            }
+            
+        }
+        
+        // 显示我的成绩
+        var markRankScore = function(score){
+            if (score == null){
+                $('#btn-uploadscore').addClass('disabled');
+                $('#myscore').text('无');
+            }
+            else{
+                $('#btn-uploadscore').removeClass('disabled');
+                $('#myscore').text(score);
+            }
+        }
+        
+        // 上传中
+        var markRankUploading = function(isUploading){
+            if (isUploading){
+                $('#btn-uploadscore').addClass('loading');
+            }
+            else{
+                $('#btn-uploadscore').removeClass('loading');
+            }
+        }
+        // 上传成功
+        var markRankUploadSuccessful = function(isSuccessful){
+            if (isSuccessful == null){
+                $('#btn-uploadscore').html('上传当前结果').removeClass('btn-error');
+            }
+            else{
+                if (isSuccessful){
+                    $('#btn-uploadscore').html('上传成功<i class="icon icon-check"></i>');
+                }
+                else{
+                    $('#btn-uploadscore').html('上传失败<i class="icon icon-cross"></i>').addClass('btn-error');
+                }
+            }
+        }
+        
         // rank为数组[{username:'xxx', score:xxx}, ...]    null表示加载中
         var listRank = function(rank){
             if (rank === null){
-                $('#rankcontent').addClass('loading');
+                $('#rankcontent table').addClass('loading');
             }
             else{
-                $('#rankcontent').removeClass('loading');
+                $('#rankcontent table').removeClass('loading');
                 $('#rankcontent tbody').html('');
                 rank.forEach(({username, score}) => {
                     var tabrow = $(`<tr><td username></td><td score></td></tr>`);
@@ -328,6 +381,75 @@ define([], function(){
                 });
             }
         }
+        
+        // 场景设置面板初始化
+        var listedParameters = null;
+        var listParameters = function(parameters){
+            listedParameters = parameters;
+            if (Object.keys(parameters).length == 0){
+                $('#scenesettings').text('无');
+                $('#btn-savesettings').css('display', 'none');
+                return;
+            }
+            $('#scenesettings').html('');
+            for (var k in parameters){
+                var param = parameters[k];
+                var hid = 'scene-settings-' + k;
+                switch(param.type){
+                    case 'int':
+                    case 'float':
+                        var elem = $(`<div class="form-group">
+                            <div class="col-3"><label class="form-label" for="${hid}">${k}:</label></div>
+                            <div class="col-9"><input class="form-input" type="number" value="${param.value}" id="${hid}"></div>
+                        </div>`);
+                        $('#scenesettings').append(elem);
+                        break;
+                    case 'bool':
+                        var elem = $(`<div class="form-group">
+                            <div class="col-3"><label class="form-label" for="${hid}">${k}:</label></div>
+                            <div class="col-9">
+                            <label class="form-switch">
+                                <input type="checkbox" id="${hid}" checked="${param.value}"><i class="form-icon"></i>
+                            </label>
+                        </div>`);
+                        $('#scenesettings').append(elem);
+                        break;
+                    default:
+                        throw 'unknown parameter type : ' + param.type;
+                        break;
+                }
+            }
+            $('#btn-savesettings').css('display', '');
+        }
+        $('#btn-savesettings').on('click', e => {
+            //var parametersDict = {};
+            for (var k in listedParameters){
+                var param = listedParameters[k];
+                var hid = 'scene-settings-' + k;
+                switch(param.type){
+                    case 'int':
+                        var v = parseInt($('#'+hid).val());
+                        if (isNaN(v)){
+                            alert(k + ' is not a integer');
+                        }
+                        param.value = v;
+                        break;
+                    case 'float':
+                        var v = parseFloat($('#'+hid).val());
+                        if (isNaN(v)){
+                            alert(k + ' is not a float');
+                        }
+                        param.value = v;
+                        break;
+                    case 'bool':
+                        var v = !!($('#'+hid).prop('checked'));
+                        param.value = v;
+                        break;
+                }
+                
+            }
+            //listeners.invoke('settingssave', parametersDict);
+        });
         
         // listen click
         $('#btn-save').on('click', e => listeners.invoke('save'));
@@ -341,6 +463,13 @@ define([], function(){
         $('#login-login').on('click', e => listeners.invoke('login', $('#login-username').val(), $('#login-password').val()));
         $('#btn-logout').on('click', e => listeners.invoke('logout'));
         $('#btn-rank').on('click', e => listeners.invoke('rank'));
+        $('#btn-login').on('click', e => listeners.invoke('loginopen'));
+        $('#login-password').on('keypress', e => {
+            if (e.keyCode == 13) listeners.invoke('login', $('#login-username').val(), $('#login-password').val());
+        });
+        $('#btn-settings').on('click', e => listeners.invoke('settingsopen'));
+        $('#select-rank').on('change', e => listeners.invoke('rankchange', $('#select-rank').val()));
+        $('#btn-uploadscore').on('click', e => listeners.invoke('uploadscore', $('#select-rank').val()));
         var on = function(e, f){
             listeners.on(e, f);
         }
@@ -389,6 +518,11 @@ define([], function(){
             markLogin,
             markLoginError,
             markLoginLoading,
+            markRankCat,
+            markRankScore,
+            markRankUploading,
+            markRankUploadSuccessful,
+            listParameters,
             listRank,
             listLevel,
             listLang,

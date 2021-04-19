@@ -36,6 +36,33 @@ define([
         return { x : x, y : -y};
     }
     
+    
+    function randGen(seed){
+        var s = seed;
+        return () => {
+            s = (s * 9301 + 49297) % 233280;
+            return s / 233280.0;
+        };
+    }
+    
+    class RankItem{
+        constructor(name, reversed){
+            this.name = name;
+            this.reversed = reversed;
+            this.myScore_ = null;
+        }
+        
+        get myScore(){
+            return this.myScore_;
+        }
+        set myScore(v){
+            if (typeof(this.onChange) == 'function'){
+                this.onChange(v);
+            }
+            this.myScore_ = v;
+        }
+    }
+    
     const massUnit = 100000;
     const startMass = 32 * 1000;
     
@@ -82,6 +109,10 @@ define([
             console.log('falcon reset');
             
             this.time = 0;
+            this.rand = randGen(this.parameters.randomSeed.value);
+            for (var k in this.rank){
+                this.rank[k].myScore = null;
+            }
             
             this.matter.engine.camTarget.x = 250;
             this.matter.engine.camTarget.y = -5800;
@@ -93,7 +124,7 @@ define([
                 pauseFlag = true;
             }
             
-            this.vessel.position = icoor(250, 5800);
+            this.vessel.position = icoor(this.parameters.randomStart.value ? ( 50 + 300 *(this.rand())) : (250), 5800);
             this.vessel.angle = -2 * Math.PI / 180;
             this.vessel.velocity = {x:5, y:320};
             this.vessel.angularVelocity = 0;
@@ -192,7 +223,11 @@ define([
                     this.landedCounter++;
                     if (this.landedCounter >= 30 && !this.landed){
                         this.landed = true;
-                        this.ui.log(`successfully landed. fuel consumed = ${((startMass - this.vessel.mass)/1000).toFixed(8)}t, errorX = ${Math.abs(this.launchpads.landingPads[1].x - this.vessel.position.x)}.`, 3);
+                        var fuelConsumption = (startMass - this.vessel.mass)/1000; // ton
+                        var horizontalError = Math.abs(this.launchpads.landingPads[1].x - this.vessel.position.x);
+                        this.ui.log(`successfully landed. fuel consumed = ${(fuelConsumption).toFixed(8)}t, errorX = ${horizontalError}.`, 3);
+                        this.rank.falcon_prec.myScore = horizontalError;
+                        this.rank.falcon_fuel.myScore = fuelConsumption;
                     }
                 }
                 else{
@@ -322,6 +357,22 @@ void update(){
 <p>值得注意的是该火箭使用的发动机最低只能稳定输出40%的最大推力，如果继续降低就会直接熄火。setThrottle传入的数值会被自动规范化到[0.4, 1.0]的区间内。这也意味着推重比永远大于一，在落点附近悬停调整水平位置是不现实的，需要想其他办法来增加水平精度。</p>
 <p>注：如果忘记放着陆架或者着陆速度大于5m/s会导致<b><i>Rapid Unscheduled Disassembly</i></b></p>
 <p>注2：由于物理引擎是固定时间步长，所以同样的初始条件+同样的代码能保证得出同样的结果。以相同初始条件运行，也可以粗略地比较出不同算法之间的性能优劣</p>`;
+        // 场景设置
+        parameters = {
+            randomStart : {
+                type : 'bool',
+                value : true,
+            },
+            randomSeed : {
+                type : 'int',
+                value : 23333,
+            },
+        };
+        // 场景中涉及到的排名
+        rank = {
+            falcon_prec : new RankItem('落点水平方向误差', true/*true表示越小越好*/),
+            falcon_fuel : new RankItem('燃料消耗', true/*true表示越小越好*/),
+        };
         // 全局变量描述
         documentation = {
             setGimbal : {
