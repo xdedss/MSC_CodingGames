@@ -14,7 +14,18 @@ define([], function(){
         });
     }
     
-    async function ajaxPostAsync(url, dataObj){
+    async function ajaxPostAsync(url, dataObj, useUrlParams){
+        if (useUrlParams){
+            var query = '';
+            for (var k in dataObj){
+                query += k + '=' + encodeURIComponent(dataObj[k].toString());
+                query += '&';
+            }
+            if (query.length != 0){
+                url += '?' + query.substring(0, query.length - 1);
+            }
+            console.log(url);
+        }
         return new Promise((resolve, reject) => {
             $.ajax({
                 type: 'POST',
@@ -46,7 +57,7 @@ define([], function(){
 //    }
     
     // 没有后端 编一些数数模拟
-    let dummyDebug = true;
+    let dummyDebug = location.href.indexOf('file://') != -1;
     let dummyUser = 'user';
     let dummyPass = MD5('www');
     let dummyToken = '1145141';
@@ -60,7 +71,7 @@ define([], function(){
             
             var res;
             if (!dummyDebug){
-                res = await ajaxPostAsync('/login', postData);
+                res = await ajaxPostAsync('/login', postData, true);
                 res.success = res.code == 200;
                 res.token = res.data;
             }
@@ -91,7 +102,7 @@ define([], function(){
             
             var res;
             if (!dummyDebug){
-                res = await ajaxPostAsync('/user/validate', postData);
+                res = await ajaxPostAsync('/user/validate', postData, true);
                 res.success = res.code == 200;
             }
             else{
@@ -130,7 +141,7 @@ define([], function(){
             
             var res;
             if (!dummyDebug){
-                res = await ajaxPostAsync('xxx', postData);
+                res = await ajaxPostAsync('/score/upload', postData);
                 res.success = res.code == 200;
             }
             else{
@@ -161,7 +172,7 @@ define([], function(){
             
             var res;
             if (!dummyDebug){
-                res = await ajaxPostAsync('xxx', postData);
+                res = await ajaxPostAsync('/score/getall', postData, true);
                 res.success = res.code == 200;
                 res.rank = res.data;
             }
