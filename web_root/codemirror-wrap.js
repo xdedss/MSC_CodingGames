@@ -37,7 +37,7 @@ define([
         });
         //console.log(width);
         $('.CodeMirror').css('height', height);//.css('max-width', width);
-        $('#editorframe').css('overflow', 'hidden');
+        //$('#editorframe').css('overflow-x', 'hidden');
         
         // editor width workaround
 //        $(window).on('resize', e => {

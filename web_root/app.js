@@ -403,14 +403,6 @@ $(function(){
             currentLang = getLangName || storage.misc.load('lastlang');
             console.log('language : ' + currentLang);
             
-            // open help
-            if (storage.isFirstOpen()){
-                console.log('first');
-                location.hash = 'help';
-            }
-            else{
-                //console.log('not first');
-            }
             
             // login
             // auto login
@@ -464,6 +456,15 @@ $(function(){
                     storage.misc.save('username', username);
                     storage.misc.save('token', res.token);
                     loadLevelAuto(getLevelName);
+                    
+                    // open help
+                    if (storage.isFirstOpen()){
+                        console.log('first');
+                        location.hash = 'help';
+                    }
+                    else{
+                        //console.log('not first');
+                    }
                 }
                 else{
                     ui.markLoginLoading(false);
