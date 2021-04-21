@@ -316,7 +316,7 @@ function update(){
         // x control
         var xErr = targetX  - vessel.position.x;
         var vxErr = 0 - vessel.velocity.x;
-        var targetAngle = (90 - 0.3 * (xErr + vxErr*5)) * Math.PI / 180;
+        var targetAngle = (90 - 0.1 * (xErr + vxErr*5)) * Math.PI / 180;
 
         // angle control
         var angleErr = targetAngle - vessel.angle;

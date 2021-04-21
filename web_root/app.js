@@ -182,6 +182,10 @@ $(function(){
             ui.on('resetsim', function(){
                 if (currentLevel != null){
                     ui.log('level reset', 1);
+                    currentLevel.currentParameters = {};
+                    for (var k in currentLevel.parameters){
+                        currentLevel.currentParameters[k] = currentLevel.parameters[k].value;
+                    }
                     currentLevel.reset();
                     //changedExec.set(true);
                     // also run code
@@ -343,6 +347,10 @@ $(function(){
                     //ui.listLevel();
                     ui.markLevel(name);
                     
+                    currentLevel.currentParameters = {};
+                    for (var k in currentLevel.parameters){
+                        currentLevel.currentParameters[k] = currentLevel.parameters[k].value;
+                    }
                     ui.log('[LoadLevel] level "' + name + '" loaded', 3);
                     
                     // also run code
@@ -415,27 +423,34 @@ $(function(){
                         loadLevelAuto(getLevelName);
                         return;
                     }
+                    else{
+                        console.log(res);
+                    }
                 }
                 // not logged in
                 location.hash = 'login';
             })();
             
-            // init login panel
+            // init login panel 用户打开登录面板
             ui.on('loginopen', function(){
                 ui.markLoginLoading(false);
                 ui.markLoginError(null);
             });
             
-            // login action
+            // login action 用户点击登录面板上的登录按钮
             ui.on('login', async function(username, password) {
                 // check values
-                console.log(username, password);
+                //console.log(username, password);
                 if (username.length == 0){
                     ui.markLoginError('用户名不能为空');
                     return;
                 }
                 if (password.length == 0){
                     ui.markLoginError('密码不能为空');
+                    return;
+                }
+                if (username.length > 233 || password.length > 233){
+                    ui.markLoginError('用户名或密码太长了😅');
                     return;
                 }
                 // send request
@@ -452,25 +467,28 @@ $(function(){
                 }
                 else{
                     ui.markLoginLoading(false);
-                    ui.markLoginError('登录失败');
+                    ui.markLoginError('登录失败：' + res.msg);
                 }
             });
             
+            // 用户点击退出登录
             ui.on('logout', function(){
                 storage.misc.remove('token');
                 storage.misc.remove('username');
                 ui.markLogin(null);
                 ui.markLoginLoading(false);
                 ui.markLoginError(null);
-                location.href = location.href; // reload
+                location.reload(); // reload
             });
             
+            //用户点击排行榜
             ui.on('rank', function(){
                 if (currentLevel != null) {
                     ui.markRankCat(currentLevel.rank);
                 }
             });
             
+            // 用户选择当前查看的排行榜
             ui.on('rankchange', async function(rankname){
                 console.log(rankname);
                 ui.listRank(null); //加载中
@@ -482,15 +500,18 @@ $(function(){
                     }
                     else{
                         // ???
+                        console.log('rank loading failed');
+                        console.log(res);
                     }
                 }
                 
             });
             
+            // 用户点击上传代码
             ui.on('uploadscore', async function(rankname){
                 if (currentLevel != null && storage.misc.has('token')){
                     ui.markRankUploading(true);
-                    var res = await api.uploadScore(storage.misc.load('token'), rankname, currentLevel.rank[rankname].myScore, currentLevel.currentCode);
+                    var res = await api.uploadScore(storage.misc.load('token'), rankname, currentLevel.currentParameters, currentLevel.rank[rankname].myScore, currentLevel.currentCode);
                     ui.markRankUploading(false);
                     if (res.success){
                         ui.markRankUploadSuccessful(true);

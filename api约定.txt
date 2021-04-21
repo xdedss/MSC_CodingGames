@@ -26,6 +26,7 @@ uploadscore
             "token" : "8e6070d15d129ec47a0ca4981d9b4184",
             "levelname" : "falcon",
             "score" : 2.333,
+            "params" : "xxxxx",
             "code" : "function update(){ ........."
         }
     返回示例：

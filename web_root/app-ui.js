@@ -314,7 +314,7 @@ define([], function(){
         var markRankCat = function(rankCat){
             if (rankCat == null || Object.keys(rankCat).length == 0){
                 $('#rankcontent').css('display', 'none');
-                $('#select-rank').html('<option>无可用排名</option>');
+                $('#select-rank').html('<option>当前场景无可用排名</option>');
             }
             else{
                 $('#rankcontent').css('display', '');
@@ -344,10 +344,10 @@ define([], function(){
         // 上传中
         var markRankUploading = function(isUploading){
             if (isUploading){
-                $('#btn-uploadscore').addClass('loading');
+                $('#btn-uploadscore').addClass('loading disabled');
             }
             else{
-                $('#btn-uploadscore').removeClass('loading');
+                $('#btn-uploadscore').removeClass('loading disabled');
             }
         }
         // 上传成功

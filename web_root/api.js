@@ -2,8 +2,8 @@
 
 
 
-//(®s®F°ı°‰)®s¶‡©ﬂ©•©ﬂ
-// ∫Û∂ÀÕ®–≈
+//(‚ïØ‚Äµ‚ñ°‚Ä≤)‚ïØÔ∏µ‚îª‚îÅ‚îª
+// ÂêéÁ´ØÈÄö‰ø°
 
 
 define([], function(){
@@ -27,11 +27,13 @@ define([], function(){
                         resolve(res);
                     }
                     catch(e){
-                        reject({status:'JSON parse error', e:e});
+                        //reject({status:'JSON parse error', e:e});
+                        resolve({code : 0, msg : 'JSON parse error', e : e});
                     }
                 },
                 error: (xhr, msg, e) => {
-                    reject({status:xhr.status, e:e});
+                    //reject({status:xhr.status, e:e});
+                    resolve({code : xhr.status, msg:e});
                 },
             });
         });
@@ -43,10 +45,11 @@ define([], function(){
 //        
 //    }
     
-    // √ª”–∫Û∂À ±‡“ª–© ˝ ˝ƒ£ƒ‚
+    // Ê≤°ÊúâÂêéÁ´Ø Áºñ‰∏Ä‰∫õÊï∞Êï∞Ê®°Êãü
+    let dummyDebug = true;
     let dummyUser = 'user';
     let dummyPass = MD5('www');
-    let dummyToken = '114514';
+    let dummyToken = '1145141';
     let dummyRank = [{username : 'user1', score : 123 }, {username : 'user2', score : 233 }];
     
     // return token
@@ -55,96 +58,126 @@ define([], function(){
             var passwordmd5 = MD5(password);
             var postData = {username : username, pass : passwordmd5 };
             
-            // var res = await ajaxPostAsync('xxx', postData);
-            var res = await (async function(){ //dummy server
-                await sleep(1000);
-                if (username == dummyUser && passwordmd5 == dummyPass){
-                    return { success : true, token : dummyToken };
-                }
-                else{
-                    return { success : false };
-                }
-            })();
+            var res;
+            if (!dummyDebug){
+                res = await ajaxPostAsync('/login', postData);
+                res.success = res.code == 200;
+                res.token = res.data;
+            }
+            else{
+                res = await (async function(){ //dummy server
+                    await sleep(1000);
+                    if (username == dummyUser && passwordmd5 == dummyPass){
+                        return { success : true, token : dummyToken };
+                    }
+                    else{
+                        return { success : false, msg : 'Áî®Êà∑ÂêçÊàñÂØÜÁ†ÅÈîôËØØ' };
+                    }
+                })();
+            }
             
             return res;
         }
         catch(e){
             console.log(e);
-            return { success : false };
+            return { success : false, msg : "unknown error" };
         }
     }
     
-    // return µ«¬º◊¥Ã¨ «∑Ò”––ß
+    // return ÁôªÂΩïÁä∂ÊÄÅÊòØÂê¶ÊúâÊïà
     async function validate(token){
         try{
             var postData = {token};
             
-            // var res = await ajaxPostAsync('xxx', postData);
-            var res = await (async function(){
-                await sleep(1000);
-                if (token == dummyToken) {
-                    return { success : true };
-                }
-                else{
-                    return { success : false };
-                }
-            })();
+            var res;
+            if (!dummyDebug){
+                res = await ajaxPostAsync('/user/validate', postData);
+                res.success = res.code == 200;
+            }
+            else{
+                res = await (async function(){
+                    await sleep(1000);
+                    if (token == dummyToken) {
+                        return { success : true };
+                    }
+                    else{
+                        return { success : false, msg : 'ÁôªÂΩïÂ∑≤Â§±Êïà' };
+                    }
+                })();
+            }
             
             return res;
         }
         catch(e){
             console.log(e);
-            return { success : false };
+            return { success : false, msg : "unknown error" };
         }
     }
     
-    // ¥´»Î
-    async function uploadScore(token, levelName, score, code){
+    // ‰º†ÂÖ•
+    async function uploadScore(token, levelName, params, score, code){
         try{
+            if (code.length > 1 * 1024 * 1024 * 1024){
+                return {success:false, msg:"code is too long"};
+            }
             var postData = {
                 "token" : token,
                 "levelname" : levelName,
+                "params" : JSON.stringify(params),
                 "score" : score,
                 "code" : code
             };
             
-            // var res = await ajaxPostAsync('xxx', postData);
-            var res = await (async function(){
-                await sleep(1000);
-                if (token == dummyToken) {
-                    console.log(JSON.stringify({token, levelname : levelName, score, code}));
-                    return { success : true };
-                }
-                else {
-                    return { success : false };
-                }
-            })();
+            var res;
+            if (!dummyDebug){
+                res = await ajaxPostAsync('xxx', postData);
+                res.success = res.code == 200;
+            }
+            else{
+                res = await (async function(){
+                    await sleep(1000);
+                    if (token == dummyToken) {
+                        console.log(JSON.stringify(postData));
+                        return { success : true };
+                    }
+                    else {
+                        return { success : false , msg : 'Êú™ÁôªÂΩï' };
+                    }
+                })();
+            }
             
             return res;
         }
         catch(e){
             console.log(e);
-            return { success : false };
+            return { success : false, msg : "unknown error" };
         }
     }
     
-    // º”‘ÿ≈≈––∞Ò ≤ª–Ë“™»œ÷§
+    // Âä†ËΩΩÊéíË°åÊ¶ú ‰∏çÈúÄË¶ÅËÆ§ËØÅ
     async function getRank(levelName){
         try{
             var postData = {levelname : levelName};
             
-            // var res = await ajaxPostAsync('xxx', postData);
-            var res = await (async function(){
-                await sleep(1000);
-                return { success : true, rank : dummyRank };
-            })();
+            var res;
+            if (!dummyDebug){
+                res = await ajaxPostAsync('xxx', postData);
+                res.success = res.code == 200;
+                res.rank = res.data;
+            }
+            else{
+                res = await (async function(){
+                    await sleep(1000);
+                    return { success : true, rank : dummyRank };
+                })();
+            }
             
-            console.log(res);
+            //console.log(res);
             return res;
         }
         catch(e){
             console.log(e);
-            return { success : false };
+            return { success : false, msg : "unknown error" };
         }
     }
     
