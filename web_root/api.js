@@ -128,7 +128,7 @@ define([], function(){
     // 传入
     async function uploadScore(token, levelName, params, score, code){
         try{
-            if (code.length > 1 * 1024 * 1024 * 1024){
+            if (code.length > 1 * 1024 * 1024){
                 return {success:false, msg:"code is too long"};
             }
             var postData = {
