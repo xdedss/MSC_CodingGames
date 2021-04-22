@@ -34,11 +34,13 @@ define([], function(){
                 data: JSON.stringify(dataObj),
                 success: (data) => {
                     try{
-                        let res = JSON.parse(data);
+                        // data直接就是js object
+                        let res = data; //JSON.parse(data);
                         resolve(res);
                     }
                     catch(e){
                         //reject({status:'JSON parse error', e:e});
+                        console.log(data);
                         resolve({code : 0, msg : 'JSON parse error', e : e});
                     }
                 },
@@ -56,8 +58,10 @@ define([], function(){
 //        
 //    }
     
+    let baseUrl = 'http://zzstudios.cn:8848';
+    
     // 没有后端 编一些数数模拟
-    let dummyDebug = location.href.indexOf('file://') != -1;
+    let dummyDebug = false; //location.href.indexOf('file://') != -1;
     let dummyUser = 'user';
     let dummyPass = MD5('www');
     let dummyToken = '1145141';
@@ -71,7 +75,7 @@ define([], function(){
             
             var res;
             if (!dummyDebug){
-                res = await ajaxPostAsync('/login', postData, true);
+                res = await ajaxPostAsync(baseUrl + '/login', postData, true);
                 res.success = res.code == 200;
                 res.token = res.data;
             }
@@ -102,7 +106,7 @@ define([], function(){
             
             var res;
             if (!dummyDebug){
-                res = await ajaxPostAsync('/user/validate', postData, true);
+                res = await ajaxPostAsync(baseUrl + '/user/validate', postData, true);
                 res.success = res.code == 200;
             }
             else{
@@ -141,7 +145,7 @@ define([], function(){
             
             var res;
             if (!dummyDebug){
-                res = await ajaxPostAsync('/score/upload', postData);
+                res = await ajaxPostAsync(baseUrl + '/score/upload', postData);
                 res.success = res.code == 200;
             }
             else{
@@ -172,9 +176,12 @@ define([], function(){
             
             var res;
             if (!dummyDebug){
-                res = await ajaxPostAsync('/score/getall', postData, true);
+                res = await ajaxPostAsync(baseUrl + '/score/getall', postData, true);
                 res.success = res.code == 200;
                 res.rank = res.data;
+                for (var i = 0; i < res.rank.length; i++){
+                    res.rank[i].score = parseFloat(res.rank[i].score);
+                }
             }
             else{
                 res = await (async function(){

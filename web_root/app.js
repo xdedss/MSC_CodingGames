@@ -495,7 +495,7 @@ $(function(){
                 ui.listRank(null); //加载中
                 if (currentLevel != null && currentLevel.rank[rankname] != null) {
                     ui.markRankScore(currentLevel.rank[rankname].myScore);
-                    var res = await api.getRank(currentLevel.name).then(w => w, e => {success : false});
+                    var res = await api.getRank(rankname).then(w => w, e => {success : false});
                     if (res.success){
                         ui.listRank(res.rank);
                     }
