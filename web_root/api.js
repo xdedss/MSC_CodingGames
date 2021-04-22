@@ -8,6 +8,10 @@
 
 define([], function(){
     
+    // 根url，不加斜杠
+    let baseUrl = 'http://zzstudios.cn:8848';
+    
+    
     function sleep(ms){
         return new Promise(resolve => {
             setTimeout(resolve, ms);
@@ -31,7 +35,7 @@ define([], function(){
                 type: 'POST',
                 url: url,
                 contentType: "application/json;charset=utf-8",
-                data: JSON.stringify(dataObj),
+                data: useUrlParams ? null : JSON.stringify(dataObj),
                 success: (data) => {
                     try{
                         // data直接就是js object
@@ -58,7 +62,6 @@ define([], function(){
 //        
 //    }
     
-    let baseUrl = 'http://zzstudios.cn:8848';
     
     // 没有后端 编一些数数模拟
     let dummyDebug = false; //location.href.indexOf('file://') != -1;
