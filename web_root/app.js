@@ -497,6 +497,7 @@ $(function(){
                     ui.markRankScore(currentLevel.rank[rankname].myScore);
                     var res = await api.getRank(rankname).then(w => w, e => {success : false});
                     if (res.success){
+                        res.rank.sort((a,b)=>currentLevel.rank[rankname].reversed ? (b.score-a.score) : (a.score-b.score));
                         ui.listRank(res.rank);
                     }
                     else{

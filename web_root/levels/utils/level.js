@@ -125,6 +125,8 @@ define([], function(){
         template = "\nconsole.log('hello world');\n";
         desc = "no description provided.";
         parameters = {};
+        // 场景中涉及到的排名
+        rank = {};
         documentation = {
             foo : {
                 type : 'function',
