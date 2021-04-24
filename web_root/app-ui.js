@@ -310,6 +310,34 @@ define([], function(){
             }
         }
         
+        // 改密码错误
+        var markChangePassError = function(error){
+            if (error === null){
+                $('#changepasscontent .text-error').text('');
+            }
+            else{
+                $('#changepasscontent .text-error').text(error);
+            }
+        }
+        // 改密码加载中
+        var markChangePassLoading = function(isLoading){
+            if (isLoading){
+                $('#changepass-submit').addClass('disabled loading');
+            }
+            else{
+                $('#changepass-submit').removeClass('disabled loading');
+            }
+        }
+        // 改密码成过信息
+        var markChangePassSuccess = function(msg){
+            if (msg === null){
+                $('#changepasscontent .text-success').text('');
+            }
+            else{
+                $('#changepasscontent .text-success').text(msg);
+            }
+        }
+        
         // 初始化排名面板
         var markRankCat = function(rankCat){
             if (rankCat == null || Object.keys(rankCat).length == 0){
@@ -463,7 +491,11 @@ define([], function(){
         $('#login-login').on('click', e => listeners.invoke('login', $('#login-username').val(), $('#login-password').val()));
         $('#btn-logout').on('click', e => listeners.invoke('logout'));
         $('#btn-rank').on('click', e => listeners.invoke('rank'));
-        $('#btn-login').on('click', e => listeners.invoke('loginopen'));
+        $('#btn-login').on('click', e => {
+            markLoginLoading(false);
+            markLoginError(null);
+            listeners.invoke('loginopen');
+        });
         $('#login-password').on('keypress', e => {
             if (e.keyCode == 13) listeners.invoke('login', $('#login-username').val(), $('#login-password').val());
         });
@@ -473,10 +505,23 @@ define([], function(){
         var on = function(e, f){
             listeners.on(e, f);
         }
+        $('#btn-username').on('click', e => {
+            markChangePassError(null);
+            $('#changepass-password').val('');
+            $('#changepass-password-n1').val('');
+            $('#changepass-password-n2').val('');
+            listeners.invoke('changepassopen');
+        });
+        $('#changepass-submit').on('click', e => {
+            var oldpass = $('#changepass-password').val();
+            var newpass1 = $('#changepass-password-n1').val();
+            var newpass2 = $('#changepass-password-n2').val();
+            listeners.invoke('changepass', oldpass, newpass1, newpass2);
+        });
         
         // hotkeys
         $(document).on('keydown', e => {
-            console.log(e);
+            //console.log(e);
             if (e.ctrlKey && e.keyCode == 83){ // ctrl+S
                 e.preventDefault();
                 $('#btn-save').click();
@@ -522,6 +567,9 @@ define([], function(){
             markRankScore,
             markRankUploading,
             markRankUploadSuccessful,
+            markChangePassError,
+            markChangePassLoading,
+            markChangePassSuccess,
             listParameters,
             listRank,
             listLevel,

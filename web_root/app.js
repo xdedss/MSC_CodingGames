@@ -425,8 +425,6 @@ $(function(){
             
             // init login panel 用户打开登录面板
             ui.on('loginopen', function(){
-                ui.markLoginLoading(false);
-                ui.markLoginError(null);
             });
             
             // login action 用户点击登录面板上的登录按钮
@@ -482,6 +480,46 @@ $(function(){
                 location.reload(); // reload
             });
             
+            // 用户打开改密码页面
+            ui.on('changepassopen', function(){
+            });
+            // 用户更改密码
+            ui.on('changepass', async function(password, newpass1, newpass2){
+                if (newpass1 !== newpass2){
+                    ui.markChangePassError('两次输入的新密码不同');
+                    return;
+                }
+                if (password.length == 0 || newpass1.length == 0){
+                    ui.markChangePassError('密码不能为空');
+                    return;
+                }
+                if (password.length > 233 || newpass1.length > 233){
+                    ui.markChangePassError('密码过长');
+                    return;
+                }
+                if (newpass1.length < 8){
+                    ui.markChangePassError('请保证新密码在8个字符以上');
+                    return;
+                }
+                ui.markChangePassLoading(true);
+                ui.markChangePassError(null);
+                // request
+                var res = await api.changePass(storage.misc.load('username'), password, newpass1).then(w => w, e => {success : false});
+                
+                if (res.success){
+                    ui.markChangePassLoading(false);
+                    storage.misc.save('token', res.token);
+                    ui.markChangePassSuccess('修改成过');
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    ui.markChangePassSuccess(null);
+                }
+                else{
+                    ui.markChangePassLoading(false);
+                    ui.markChangePassError('操作失败：' + res.msg);
+                }
+                
+            });
+            
             //用户点击排行榜
             ui.on('rank', function(){
                 if (currentLevel != null) {
@@ -521,6 +559,8 @@ $(function(){
                     else{
                         ui.markRankUploadSuccessful(false);
                         console.log(res);
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        alert('code' + res.code + '\nmsg: ' + res.msg);
                     }
                     await new Promise(resolve => setTimeout(resolve, 2000));
                     ui.markRankUploadSuccessful(null);

@@ -50,7 +50,7 @@ define([], function(){
                 },
                 error: (xhr, msg, e) => {
                     //reject({status:xhr.status, e:e});
-                    resolve({code : xhr.status, msg:e});
+                    resolve({code : xhr.status, msg: 'code=' + xhr.status});
                 },
             });
         });
@@ -90,6 +90,39 @@ define([], function(){
                     }
                     else{
                         return { success : false, msg : '用户名或密码错误' };
+                    }
+                })();
+            }
+            
+            return res;
+        }
+        catch(e){
+            console.log(e);
+            return { success : false, msg : "unknown error" };
+        }
+    }
+    
+    // 改密码
+    async function changePass(username, oldpass, newpass){
+        try{
+            var oldpassmd5 = MD5(oldpass);
+            var newpassmd5 = MD5(newpass);
+            var postData = {username : username, pass : oldpassmd5, npass : newpassmd5 };
+            
+            var res;
+            if (!dummyDebug){
+                res = await ajaxPostAsync(baseUrl + '/user/modify', postData, true);
+                res.success = res.code == 200;
+                res.token = res.data;
+            }
+            else{
+                res = await (async function(){ //dummy server
+                    await sleep(1000);
+                    if (username == dummyUser && oldpassmd5 == dummyPass){
+                        return { success : true, token : dummyToken };
+                    }
+                    else{
+                        return { success : false, msg : '密码错误' };
                     }
                 })();
             }
@@ -204,6 +237,7 @@ define([], function(){
     
     return {
         login,
+        changePass,
         validate,
         uploadScore,
         getRank,
