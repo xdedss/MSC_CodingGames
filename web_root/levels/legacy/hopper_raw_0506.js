@@ -4,8 +4,8 @@
 
 
 define([
-    'level', 'sandbox-wrap', 'levels/utils/launchpads', 'levels/utils/hoppervessel', 'levels/utils/checkpoint',
-], function(Level, SandboxWrap, LaunchpadsScene, HopperVessel, Checkpoint){
+    'level', 'sandbox-wrap', 'levels/utils/launchpads', 'levels/utils/hoppervessel', 
+], function(Level, SandboxWrap, LaunchpadsScene, HopperVessel){
     
     function setSprite(body, srcSize, tgtSize, path){
         body.render.sprite.texture = path;
@@ -36,34 +36,7 @@ define([
         return { x : x, y : -y};
     }
     
-    class RankItem{
-        constructor(name, reversed){
-            this.name = name;
-            this.reversed = reversed;
-            this.myScore_ = null;
-        }
-        
-        get myScore(){
-            return this.myScore_;
-        }
-        set myScore(v){
-            if (typeof(this.onChange) == 'function'){
-                this.onChange(v);
-            }
-            this.myScore_ = v;
-        }
-    }
-    
     const massUnit = 100000;
-    const checkpointPosition = [
-        { x : 135, y : -50 },
-        { x : 240, y : -120 },
-        { x : 360, y : -160 },
-        { x : 400, y : -100 },
-        { x : 340, y : -50 },
-        { x : 240, y : -55 },
-        { x : 175, y : -30 },
-    ];
     
     class LevelStarhopper extends Level {
         
@@ -88,19 +61,6 @@ define([
                     mask : 0
                 },
             }), 10);
-            
-            // checkpoints
-            this.checkpoints = [];
-            for (var i = 0; i < checkpointPosition.length; i++) {
-                var ckp = new Checkpoint(20);
-                ckp.position = checkpointPosition[i];
-                this.checkpoints.push(ckp);
-                this.addObject(ckp, 5);
-                if (i < checkpointPosition.length - 1) {
-                    ckp.pointTowards(checkpointPosition[i + 1])
-                }
-            }
-            
             
             // cam limit
             this.matter.engine.camLimit.maxSize = 200;
@@ -129,15 +89,6 @@ define([
             this.matter.engine.camTarget.x = 134;
             this.matter.engine.camTarget.y = -40;
             this.matter.engine.camTarget.size = 100;
-            
-            // finish state
-            this.finished = false;
-            
-            // checkpoints
-            for (var i = 0; i < this.checkpoints.length; i++) {
-                this.checkpoints[i].markState(1);
-                this.checkpointPassed = 0;
-            }
             
             var pauseFlag = false;
             if (this.matter.engine.paused) {
@@ -177,7 +128,7 @@ define([
             
             if (!engine.paused){
                 // control
-                if (this.sandbox != null && !this.hopper.isDestroyed &&  !this.finished){
+                if (this.sandbox != null && !this.hopper.isDestroyed){
                     // ---- prepare input variables
                     var pos = icoor(this.hopper.position);
                     var vel = icoor(this.hopper.velocity);
@@ -193,7 +144,6 @@ define([
                         maxThrust : this.hopper.maxThrust,
                         maxGimbal : this.hopper.maxGimbal,
                     });
-                    this.sandbox.setGlobal('target', icoor(checkpointPosition[Math.min(this.checkpointPassed, this.checkpoints.length - 1)]));
                     this.sandbox.setGlobal('mouse', icoor(this.mousePosition));
                     this.sandbox.setGlobal('time', this.time);
                     this.sandbox.setGlobal('dt', 1/60);
@@ -218,24 +168,6 @@ define([
                 this.marker.x = (isNaN(this.markerPos.x) || this.markerPos.x == null) ? -100 : this.markerPos.x;
                 this.marker.y = (isNaN(this.markerPos.y) || this.markerPos.y == null) ? -100 : this.markerPos.y;
                 Matter.Body.setPosition(this.marker, icoor(this.markerPos));
-                
-                // checkpoint
-                var currentCkp = this.checkpoints[this.checkpointPassed];
-                if (currentCkp == null) {
-                    if (!this.finished) {
-                        this.finished = true;
-                        this.ui.log(`finished. t = ${this.time} sec.`, 3);
-                        this.rank.hopper_time.myScore = this.time;
-                    }
-                }
-                else {
-                    currentCkp.markState(0);
-                    if (currentCkp.check(this.hopper.position)) {
-                        currentCkp.markState(-1);
-                        this.ui.log(`checkpoint ${this.checkpointPassed} passed. t = ${this.time} sec.`, 3);
-                        this.checkpointPassed++;
-                    }
-                }
                 
             }
         }
@@ -318,13 +250,10 @@ void update(){
         
         // 场景描述，会显示在场景信息里面
         desc =  `
-<p>任务目标：依次飞过检查点，耗时越短越好。</p>
-<p>提示：每过一个物理帧代码中的update函数就会被调用一次，可以通过vessel变量获取飞行器自身的各项信息，通过target变量获取下一个检查点的位置，通过setThrottle和setGimbal控制推理大小和推力矢量的角度。</p>
-<p>为了方便测试，这个飞行器安装了不消耗燃料、推力连续可调的魔法发动机。</p>`;
-        // 场景中涉及到的排名
-        rank = {
-            hopper_time : new RankItem('完成耗时', true/*true表示越小越好*/),
-        };
+<p>这是一个demo场景，只是一个沙盒，没有设置目标。在这里你可以通过setThrottle和setGimbal控制一个<del>水塔</del>火箭起飞、悬停和降落。</p>
+<p>为了方便测试，这个飞行器安装了不消耗燃料、推力连续可调的魔法发动机。</p>
+<p>每个物理帧会调用一次代码中的update函数，可以通过全局变量获取火箭当前的状态，计算并施加节流阀和推力矢量的控制。</p>
+<p>⚠Fly Safe——碰撞速度大于5m/s会导致<b>Rapid Unscheduled Disassembly</b></p>`;
         // 全局变量描述
         documentation = {
             setGimbal : {
@@ -420,18 +349,6 @@ void update(){
                     maxGimbal : {
                         type : 'float',
                         desc : '发动机喷口最大偏转角度，单位rad',
-                    },
-                },
-            },
-            target : {
-                type : 'vector',
-                desc : '下一个检查点的位置',
-                children : {
-                    x : {
-                        type : 'float',
-                    },
-                    y : {
-                        type : 'float',
                     },
                 },
             },
