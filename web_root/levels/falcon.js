@@ -5,7 +5,8 @@
 
 define([
     'level', 'sandbox-wrap', 'levels/utils/launchpads', 'levels/utils/falconvessel', 
-], function(Level, SandboxWrap, LaunchpadsScene, Vessel){
+    'levels/utils/particles'
+], function(Level, SandboxWrap, LaunchpadsScene, Vessel, ParticleSystem){
     
     function setSprite(body, srcSize, tgtSize, path){
         body.render.sprite.texture = path;
@@ -90,9 +91,18 @@ define([
                 },
             }), 10);
             
+            // cloud particle
+            this.addObject(this.clouds = new ParticleSystem(100, null, 30));
+            this.clouds.setSprite('levels/res/cloud.png', 64);
+            this.clouds.setLife(0);
+            
             // cam limit
             this.matter.engine.camLimit.maxSize = 200;
             this.matter.engine.camLimit.minSize = 30;
+            
+            // gravity setup
+            this.matter.world.gravity.x = 0;
+            this.matter.world.gravity.y = 9.81;
             
             // get mouse position
             ((that) => {
@@ -132,6 +142,21 @@ define([
             this.vessel.mass = startMass;
             //this.vessel.gearDown = 1;
             //this.vessel.gearDownTarget = 1;
+            
+            var cloudStartX = 0;
+            var cloudStartY = -6000;
+            var cloudEndX = 500;
+            var cloudEndY = -200;
+            this.clouds.clear();
+            for (var i = 0; i < this.clouds.pool.length; i++){
+                // particles
+                this.clouds.emit(
+                    {
+                        x:cloudStartX + this.rand() * (cloudEndX - cloudStartX), 
+                        y:cloudStartY + this.rand() * (cloudEndY - cloudStartY)
+                    }
+                );
+            }
             
             if (pauseFlag){
                 this.matter.engine.pause();
