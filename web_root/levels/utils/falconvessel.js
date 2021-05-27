@@ -64,6 +64,7 @@ define([
     const dryMass = 25.6 * 1000;
     const minThrottle = 0.4;
     const Isp = 2770; // m/s
+    //const Isp = 3600; // 魔法比冲
     const frictionAir = 0.0003;
     const friction = 0.8;
     const thrustOffset = {x : 0, y : 6};
@@ -182,6 +183,8 @@ define([
         }
         
         reset(){
+            this.ignitionCount = 0;
+            this.lastThrottle = 0;
             this.params = {
                 isDestroyed : false,
                 isOut : false,
@@ -315,7 +318,15 @@ define([
                         
                     if (!this.engine.paused){
                         // thrust
+                        if (this.params.throttle > 0) Math.max(this.params.throttle, minThrottle);
                         this.params.throttle = clamp(this.params.throttle, 0, (this.mass - dryMass) * Isp / (1/60) / maxThrust);
+                        if (this.lastThrottle == 0 && this.params.throttle != 0) {
+                            this.ignitionCount++;
+                        }
+                        if (this.ignitionCount > 20) {
+                            this.params.throttle = 0;
+                        }
+                        this.lastThrottle = this.params.throttle;
                         var thrust = this.params.throttle * maxThrust;
                         Matter.Body.applyForce(this.rocket.physicalBody, l2w(this.rocket.physicalBody, thrustOffset), 
                             rot({x : 0, y : - thrust / this.massUnit * 1e-6}, this.rocket.physicalBody.angle + lerp(0, maxGimbalAngle, this.params.gimbal)));

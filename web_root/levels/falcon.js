@@ -65,7 +65,7 @@ define([
     }
     
     const massUnit = 100000;
-    const startMass = 32 * 1000;
+    const startMass = 38 * 1000;
     
     class LevelFalcon extends Level {
         
